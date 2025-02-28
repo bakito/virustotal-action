@@ -1,0 +1,95 @@
+name: "VirusTotal Action"
+description: "Download release artifact archives, extracts them and analyzes the extracted exe and its archive via VirusTotal"
+author: "bakito"
+inputs:
+  release_name:
+    description: 'The github release name (use variable: "github.event.release.tag_name"'
+    required: true
+  vt_api_key:
+    description: 'The VirusTotal API Key (use variable: "secrets.VT_API_KEY")'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Check Required Input
+      shell: bash
+      run: |
+        if [[ -z "${{ inputs.release_name }}" ]]; then
+          echo "Error: 'release_name' input is required but not provided." >&2
+          exit 1
+        fi
+        if [[ -z "${{ inputs.vt_api_key }}" ]]; then
+          echo "Error: 'vt_api_key' input is required but not provided." >&2
+          exit 1
+        fi
+
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install jq
+      uses: dcarbone/install-jq-action@v3.0.1
+
+    - name: Download Release Assets
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        mkdir assets
+        gh release download ${{ inputs.release_name }} --dir assets --pattern "*windows*"
+
+    - name: Extract Archives
+      shell: bash
+      run: |
+        for file in assets/*; do
+          targetDir="extracted/$(basename ${file})"
+          mkdir -p "${targetDir}"
+          if [[ $file == *.zip ]]; then
+            unzip -o "$file" -d "${targetDir}"
+          elif [[ $file == *.tar.gz ]]; then
+            tar -xzf "$file" -C "${targetDir}"
+          elif [[ $file == *.tar.xz ]]; then
+            tar -xJf "$file" -C "${targetDir}"
+          elif [[ $file == *.rar ]]; then
+            unrar x "$file" "${targetDir}"/
+          fi
+        done
+
+    - name: Analyze Files on VirusTotal
+      shell: bash
+      env:
+        VT_API_KEY: ${{ inputs.vt_api_key }}
+      run: |
+        echo "🦠 VirusTotal Report 🔎" > vt_results.txt
+        
+        scanFile() {
+          echo "🔎 Scanning ${1}" >&2
+          response=$(curl --silent --fail --request POST \
+              --url https://www.virustotal.com/api/v3/files \
+              --header "x-apikey: $VT_API_KEY" \
+              --form "file=@${1}")
+          scan_id=$(echo ${response} | jq -r '.data.id')
+          echo "${scan_id}"
+        }
+        
+        for file in extracted/*/*.exe; do
+          if [[ -f "$file" ]]; then
+            # scan the whole archive
+            archive_name=$(basename $(dirname "$file"))
+            scan_id_archive=$(scanFile "assets/$archive_name")
+            # scan extracted exe
+            scan_id_exe=$(scanFile $file)
+        
+            scan_link_archive="https://www.virustotal.com/gui/file-analysis/$scan_id_archive/detection"
+            scan_link_exe="https://www.virustotal.com/gui/file-analysis/$scan_id_exe/detection"
+            echo "- [${archive_name}]($scan_link_archive) ([$(basename $file)]($scan_link_exe))" >> vt_results.txt
+          fi
+        done
+
+    - name: Update GitHub Release Info
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release view ${{ inputs.release_name }} --json body -q .body > existing_notes.txt || echo "" > existing_notes.txt
+        cat existing_notes.txt vt_results.txt > updated_notes.txt
+        gh release edit ${{ inputs.release_name }} --notes-file updated_notes.txt
