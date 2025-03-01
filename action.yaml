@@ -8,10 +8,6 @@ inputs:
   vt_api_key:
     description: 'The VirusTotal API Key (use variable: "secrets.VT_API_KEY")'
     required: true
-  vt_page:
-    description: 'The VirusTotal landing page for the scan result links.' 
-    default: summary
-    required:
   download_release_artifact_pattern:
     description: 'Download only assets that match a glob pattern'
     default: '*windows*'
@@ -103,8 +99,8 @@ runs:
             # scan extracted exe
             scan_id_exe=$(scanFile $file)
 
-            scan_link_archive="https://www.virustotal.com/gui/file-analysis/$scan_id_archive/${{ inputs.vt_page }}"
-            scan_link_exe="https://www.virustotal.com/gui/file-analysis/$scan_id_exe/${{ inputs.vt_page }}"
+            scan_link_archive="https://www.virustotal.com/gui/file-analysis/$scan_id_archive/detection"
+            scan_link_exe="https://www.virustotal.com/gui/file-analysis/$scan_id_exe/detection"
             echo "- [${archive_name}]($scan_link_archive) ([$(basename $file)]($scan_link_exe))" >> vt_results.txt
           fi
         done
