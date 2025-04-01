@@ -35,7 +35,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: Install jq
-      uses: dcarbone/install-jq-action@v3.1.0
+      uses: dcarbone/install-jq-action@v3.1.1
 
     - name: Download Release Assets
       shell: bash
