@@ -66,7 +66,7 @@ runs:
       shell: bash
       run: |
         set -e
-        echo "🦠 VirusTotal Report 🔎" > vt_results.txt
+        echo "## 🦠 VirusTotal Report 🔎" > vt_results.txt
 
         scanFile() {
           echo "🔎 Scanning ${1}" >&2
