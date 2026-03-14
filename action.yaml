@@ -213,5 +213,17 @@ runs:
         done < result_badges.tsv
 
         gh release view ${{ inputs.release_name }} --json body -q .body > existing_notes.txt || echo "" > existing_notes.txt
+
+        # On a rerun, strip the last VirusTotal table so it gets replaced rather than appended.
+        # Removes everything from the last occurrence of the VT heading to end-of-file.
+        python3 - <<'PYEOF'
+import re, pathlib
+text = pathlib.Path("existing_notes.txt").read_text()
+cleaned = re.sub(r'\n*## 🦠 VirusTotal Report 🔎\n.*$', '', text, flags=re.DOTALL)
+pathlib.Path("existing_notes.txt").write_text(cleaned.rstrip())
+PYEOF
+
+        # Ensure a blank line separates existing notes from the new section
+        echo "" >> existing_notes.txt
         cat existing_notes.txt vt_results.txt > updated_notes.txt
         gh release edit ${{ inputs.release_name }} --notes-file updated_notes.txt
