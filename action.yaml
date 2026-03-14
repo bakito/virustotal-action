@@ -217,7 +217,7 @@ runs:
         # On a rerun, strip everything from the last VT heading to end-of-file.
         # The heading is passed via -v so awk never has emoji literals in its source.
         awk -v heading="${VT_HEADING}" \
-          '$0==heading{found=NR} {lines[NR]=$0} END{last=found?found-1:NR; for(i=1;i<=last;i++) print lines[i]}' \
+          'index($0,heading)>0{found=NR} {lines[NR]=$0} END{last=found?found-1:NR; for(i=1;i<=last;i++) print lines[i]}' \
           existing_notes.txt > stripped_notes.txt
 
         # Ensure a blank line separates existing notes from the new section
