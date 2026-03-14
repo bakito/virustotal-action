@@ -109,8 +109,8 @@ runs:
             scan_id_exe=$(scanFile "$file")
 
             echo "${archive_name}"$'\t'"${exe_name}"$'\t'"${scan_id_archive}"$'\t'"${scan_id_exe}" >> scan_ids.tsv
-            echo "  archive scan id : ${scan_id_archive}"
-            echo "  exe scan id     : ${scan_id_exe}"
+            echo "  archive : https://www.virustotal.com/gui/file-analysis/${scan_id_archive}/detection"
+            echo "  exe     : https://www.virustotal.com/gui/file-analysis/${scan_id_exe}/detection"
           fi
         done
 
