@@ -16,6 +16,14 @@ inputs:
     description: 'Pattern to select binary files for upload'
     default: '*.exe'
     required: false
+  poll_interval_seconds:
+    description: 'How many seconds to wait between polling VirusTotal for analysis status'
+    default: '30'
+    required: false
+  poll_max_attempts:
+    description: 'Maximum number of polling attempts before giving up on a scan'
+    default: '20'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -66,7 +74,9 @@ runs:
       shell: bash
       run: |
         set -e
-        echo "## 🦠 VirusTotal Report 🔎" > vt_results.txt
+
+        # scan_ids.tsv columns: archive_name <TAB> exe_name <TAB> scan_id_archive <TAB> scan_id_exe
+        > scan_ids.tsv
 
         scanFile() {
           echo "🔎 Scanning ${1}" >&2
@@ -76,7 +86,7 @@ runs:
                 --url https://www.virustotal.com/api/v3/files/upload_url \
                 --header "x-apikey: ${{ inputs.vt_api_key }}")
             upload_url=$(echo ${upload_url_response} | jq -r '.data')
-                        
+
             response=$(curl --silent --fail --request POST \
                 --url ${upload_url} \
                 --header "x-apikey: ${{ inputs.vt_api_key }}" \
@@ -87,30 +97,121 @@ runs:
                 --header "x-apikey: ${{ inputs.vt_api_key }}" \
                 --form "file=@${1}")
           fi
-          scan_id=$(echo ${response} | jq -r '.data.id')
-          echo "${scan_id}"
+          echo ${response} | jq -r '.data.id'
         }
 
         for file in extracted/*/${{ inputs.binary_pattern }}; do
           if [[ -f "$file" ]]; then
-            # scan the whole archive
             archive_name=$(basename $(dirname "$file"))
-            scan_id_archive=$(scanFile "assets/$archive_name")
-            # scan extracted exe
-            scan_id_exe=$(scanFile $file)
+            exe_name=$(basename "$file")
 
-            scan_link_archive="https://www.virustotal.com/gui/file-analysis/$scan_id_archive/detection"
-            scan_link_exe="https://www.virustotal.com/gui/file-analysis/$scan_id_exe/detection"
-            echo "- [${archive_name}]($scan_link_archive) ([$(basename $file)]($scan_link_exe))" >> vt_results.txt
+            scan_id_archive=$(scanFile "assets/$archive_name")
+            scan_id_exe=$(scanFile "$file")
+
+            echo "${archive_name}"$'\t'"${exe_name}"$'\t'"${scan_id_archive}"$'\t'"${scan_id_exe}" >> scan_ids.tsv
+            echo "  archive scan id : ${scan_id_archive}"
+            echo "  exe scan id     : ${scan_id_exe}"
           fi
         done
+
+    - name: Poll VirusTotal for Completed Results
+      shell: bash
+      run: |
+        set -e
+
+        POLL_INTERVAL="${{ inputs.poll_interval_seconds }}"
+        MAX_ATTEMPTS="${{ inputs.poll_max_attempts }}"
+
+        # result_badges.tsv columns: archive_name <TAB> exe_name <TAB> badge_archive_md <TAB> badge_exe_md
+        > result_badges.tsv
+
+        # Polls a single scan id; prints "malicious/total" when complete, or "error" on timeout.
+        pollScan() {
+          local scan_id="$1"
+          local label="$2"
+          local attempt=0
+
+          echo "⏳ Polling ${label} (${scan_id})" >&2
+
+          while [[ $attempt -lt $MAX_ATTEMPTS ]]; do
+            response=$(curl --silent --fail \
+              --url "https://www.virustotal.com/api/v3/analyses/${scan_id}" \
+              --header "x-apikey: ${{ inputs.vt_api_key }}")
+
+            status=$(echo "$response" | jq -r '.data.attributes.status')
+
+            if [[ "$status" == "completed" ]]; then
+              malicious=$(echo "$response" | jq -r '.data.attributes.stats.malicious')
+              suspicious=$(echo "$response" | jq -r '.data.attributes.stats.suspicious')
+              harmless=$(echo  "$response" | jq -r '.data.attributes.stats.harmless')
+              undetected=$(echo "$response" | jq -r '.data.attributes.stats.undetected')
+              timeout_c=$(echo  "$response" | jq -r '.data.attributes.stats.timeout')
+              type_uns=$(echo   "$response" | jq -r '.data.attributes.stats["type-unsupported"]')
+              total=$(( malicious + suspicious + harmless + undetected + timeout_c + type_uns ))
+              echo "${malicious}/${total}"
+              return 0
+            fi
+
+            echo "  attempt $((attempt+1))/${MAX_ATTEMPTS}: status=${status}, waiting ${POLL_INTERVAL}s …" >&2
+            sleep "${POLL_INTERVAL}"
+            attempt=$(( attempt + 1 ))
+          done
+
+          echo "error"
+        }
+
+        makeBadge() {
+          local scan_id="$1"
+          local display_name="$2"
+          local result="$3"   # "malicious/total" or "error"
+
+          local vt_url="https://www.virustotal.com/gui/file-analysis/${scan_id}/detection"
+
+          if [[ "$result" == "error" ]]; then
+            local badge_url="https://img.shields.io/badge/VirusTotal-scan%20timed%20out-lightgrey?logo=virustotal"
+          else
+            local malicious="${result%%/*}"
+            local total="${result##*/}"
+            local label="${malicious}%2F${total}+detected"
+
+            if [[ "$malicious" -eq 0 ]]; then
+              local color="brightgreen"
+            elif [[ "$malicious" -le 3 ]]; then
+              local color="orange"
+            else
+              local color="red"
+            fi
+
+            local badge_url="https://img.shields.io/badge/VirusTotal-${label}-${color}?logo=virustotal"
+          fi
+
+          echo "[![VirusTotal – ${display_name}](${badge_url})](${vt_url})"
+        }
+
+        while IFS=$'\t' read -r archive_name exe_name scan_id_archive scan_id_exe; do
+          result_archive=$(pollScan "$scan_id_archive" "$archive_name")
+          result_exe=$(pollScan     "$scan_id_exe"     "$exe_name")
+
+          badge_archive=$(makeBadge "$scan_id_archive" "$archive_name" "$result_archive")
+          badge_exe=$(makeBadge     "$scan_id_exe"     "$exe_name"     "$result_exe")
+
+          echo "${archive_name}"$'\t'"${exe_name}"$'\t'"${badge_archive}"$'\t'"${badge_exe}" >> result_badges.tsv
+        done < scan_ids.tsv
 
     - name: Update GitHub Release Info
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
+        echo "## 🦠 VirusTotal Report 🔎" > vt_results.txt
+        echo "" >> vt_results.txt
+        echo "| File | Archive | Binary |" >> vt_results.txt
+        echo "|------|---------|--------|" >> vt_results.txt
+
+        while IFS=$'\t' read -r archive_name exe_name badge_archive badge_exe; do
+          echo "| ${archive_name} | ${badge_archive} | ${badge_exe} |" >> vt_results.txt
+        done < result_badges.tsv
+
         gh release view ${{ inputs.release_name }} --json body -q .body > existing_notes.txt || echo "" > existing_notes.txt
-        echo "" > updated_notes.txt
         cat existing_notes.txt vt_results.txt > updated_notes.txt
         gh release edit ${{ inputs.release_name }} --notes-file updated_notes.txt
