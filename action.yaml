@@ -79,7 +79,7 @@ runs:
         > scan_ids.tsv
 
         scanFile() {
-          echo "🔎 Scanning ${1}" >&2
+          echo "Scanning ${1}" >&2
           # bigger than 32MB needs another api endpoint
           if [[ $(stat -c%s "$1") -gt 33554432 ]]; then
             upload_url_response=$(curl --silent --fail \
@@ -131,7 +131,7 @@ runs:
           local label="$2"
           local attempt=0
 
-          echo "⏳ Polling ${label} (${scan_id})" >&2
+          echo "Polling ${label} (${scan_id})" >&2
 
           while [[ $attempt -lt $MAX_ATTEMPTS ]]; do
             response=$(curl --silent --fail \
@@ -152,7 +152,7 @@ runs:
               return 0
             fi
 
-            echo "  attempt $((attempt+1))/${MAX_ATTEMPTS}: status=${status}, waiting ${POLL_INTERVAL}s …" >&2
+            echo "  attempt $((attempt+1))/${MAX_ATTEMPTS}: status=${status}, waiting ${POLL_INTERVAL}s ..." >&2
             sleep "${POLL_INTERVAL}"
             attempt=$(( attempt + 1 ))
           done
@@ -185,7 +185,7 @@ runs:
             local badge_url="https://img.shields.io/badge/VirusTotal-${label}-${color}?logo=virustotal"
           fi
 
-          echo "[![VirusTotal – ${display_name}](${badge_url})](${vt_url})"
+          echo "[![VirusTotal - ${display_name}](${badge_url})](${vt_url})"
         }
 
         while IFS=$'\t' read -r archive_name exe_name scan_id_archive scan_id_exe; do
@@ -203,8 +203,7 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        echo "## 🦠 VirusTotal Report 🔎" > vt_results.txt
-        echo "" >> vt_results.txt
+        printf '## VirusTotal-Report\n\n' > vt_results.txt
         echo "| File | Archive | Binary |" >> vt_results.txt
         echo "|------|---------|--------|" >> vt_results.txt
 
@@ -213,5 +212,13 @@ runs:
         done < result_badges.tsv
 
         gh release view ${{ inputs.release_name }} --json body -q .body > existing_notes.txt || echo "" > existing_notes.txt
-        cat existing_notes.txt vt_results.txt > updated_notes.txt
+
+        # On a rerun, strip everything from the last VT heading to end-of-file.
+        # Matches the plain ASCII marker "## VirusTotal-Report" to avoid emoji/encoding issues in awk.
+        awk '/^## VirusTotal-Report$/{found=NR} {lines[NR]=$0} END{last=found?found-1:NR; for(i=1;i<=last;i++) print lines[i]}' \
+          existing_notes.txt > stripped_notes.txt
+
+        # Ensure a blank line separates existing notes from the new section
+        sed -i -e '$a\\' stripped_notes.txt
+        cat stripped_notes.txt vt_results.txt > updated_notes.txt
         gh release edit ${{ inputs.release_name }} --notes-file updated_notes.txt
