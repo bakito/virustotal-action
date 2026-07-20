@@ -40,7 +40,7 @@ runs:
         fi
 
     - name: Checkout Repository
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Install jq
       uses: dcarbone/install-jq-action@4fcb5062d7ce9bc4382d1a352d19ba3ba2c317c1 # v4.0.1
