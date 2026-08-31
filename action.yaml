@@ -200,9 +200,9 @@ runs:
 
           last_scan="-"
           if [[ -n "${date_exe}" && "${date_exe}" != "null" ]]; then
-            last_scan=$(date -u -d "@${date_exe}" "+%Y-%m-%d %H:%M:%S")
+            last_scan=$(date -u -d "@${date_exe}" "+%Y-%m-%d %H:%M:%S %Z")
           elif [[ -n "${date_archive}" && "${date_archive}" != "null" ]]; then
-            last_scan=$(date -u -d "@${date_archive}" "+%Y-%m-%d %H:%M:%S")
+            last_scan=$(date -u -d "@${date_archive}" "+%Y-%m-%d %H:%M:%S %Z")
           fi
 
           echo "${archive_name}"$'\t'"${exe_name}"$'\t'"${badge_archive}"$'\t'"${badge_exe}"$'\t'"${last_scan}" >> result_badges.tsv
