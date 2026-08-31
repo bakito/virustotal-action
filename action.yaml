@@ -122,7 +122,7 @@ runs:
         POLL_INTERVAL="${{ inputs.poll_interval_seconds }}"
         MAX_ATTEMPTS="${{ inputs.poll_max_attempts }}"
 
-        # result_badges.tsv columns: archive_name <TAB> exe_name <TAB> badge_archive_md <TAB> badge_exe_md
+        # result_badges.tsv columns: archive_name <TAB> exe_name <TAB> badge_archive_md <TAB> badge_exe_md <TAB> last_scan
         > result_badges.tsv
 
         # Polls a single scan id; prints "malicious/total" when complete, or "error" on timeout.
@@ -148,7 +148,8 @@ runs:
               timeout_c=$(echo  "$response" | jq -r '.data.attributes.stats.timeout')
               type_uns=$(echo   "$response" | jq -r '.data.attributes.stats["type-unsupported"]')
               total=$(( malicious + suspicious + harmless + undetected + timeout_c + type_uns ))
-              echo "${malicious}/${total}"
+              analysis_date=$(echo "$response" | jq -r '.data.attributes.date')
+              echo "${malicious}/${total} ${analysis_date}"
               return 0
             fi
 
@@ -189,13 +190,22 @@ runs:
         }
 
         while IFS=$'\t' read -r archive_name exe_name scan_id_archive scan_id_exe; do
-          result_archive=$(pollScan "$scan_id_archive" "$archive_name")
-          result_exe=$(pollScan     "$scan_id_exe"     "$exe_name")
+          out_archive=$(pollScan "$scan_id_archive" "$archive_name")
+          read -r result_archive date_archive <<< "${out_archive}"
+          out_exe=$(pollScan     "$scan_id_exe"     "$exe_name")
+          read -r result_exe date_exe <<< "${out_exe}"
 
           badge_archive=$(makeBadge "$scan_id_archive" "$archive_name" "$result_archive")
           badge_exe=$(makeBadge     "$scan_id_exe"     "$exe_name"     "$result_exe")
 
-          echo "${archive_name}"$'\t'"${exe_name}"$'\t'"${badge_archive}"$'\t'"${badge_exe}" >> result_badges.tsv
+          last_scan="-"
+          if [[ -n "${date_exe}" && "${date_exe}" != "null" ]]; then
+            last_scan=$(date -u -d "@${date_exe}" "+%Y-%m-%d %H:%M:%S")
+          elif [[ -n "${date_archive}" && "${date_archive}" != "null" ]]; then
+            last_scan=$(date -u -d "@${date_archive}" "+%Y-%m-%d %H:%M:%S")
+          fi
+
+          echo "${archive_name}"$'\t'"${exe_name}"$'\t'"${badge_archive}"$'\t'"${badge_exe}"$'\t'"${last_scan}" >> result_badges.tsv
         done < scan_ids.tsv
 
     - name: Update GitHub Release Info
@@ -205,11 +215,11 @@ runs:
       run: |
         VT_HEADING="## 🦠 VirusTotal Report 🔎"
         printf '%s\n\n' "${VT_HEADING}" > vt_results.txt
-        echo "| File | Archive | Binary |" >> vt_results.txt
-        echo "|------|---------|--------|" >> vt_results.txt
+        echo "| File | Archive | Binary | Last Scan |" >> vt_results.txt
+        echo "|------|---------|--------|-----------|" >> vt_results.txt
 
-        while IFS=$'\t' read -r archive_name exe_name badge_archive badge_exe; do
-          echo "| ${archive_name} | ${badge_archive} | ${badge_exe} |" >> vt_results.txt
+        while IFS=$'\t' read -r archive_name exe_name badge_archive badge_exe last_scan; do
+          echo "| ${archive_name} | ${badge_archive} | ${badge_exe} | ${last_scan} |" >> vt_results.txt
         done < result_badges.tsv
 
         gh release view ${{ inputs.release_name }} --json body -q .body > existing_notes.txt || echo "" > existing_notes.txt
