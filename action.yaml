@@ -189,6 +189,17 @@ runs:
           echo "[![VirusTotal - ${display_name}](${badge_url})](${vt_url})"
         }
 
+        makeDateBadge() {
+          local timestamp="$1"
+          local scan_id="$2"
+
+          local formatted_date=$(date -u -d "@${timestamp}" "+%Y-%m-%d %H:%M:%S %Z")
+          local encoded_date=$(echo "${formatted_date}" | sed 's/-/--/g; s/ /%20/g; s/:/%3A/g')
+          local vt_url="https://www.virustotal.com/gui/file-analysis/${scan_id}/detection"
+
+          echo "[![Last Scan](https://img.shields.io/badge/Last%20Scan-${encoded_date}-blue?logo=virustotal)](${vt_url})"
+        }
+
         while IFS=$'\t' read -r archive_name exe_name scan_id_archive scan_id_exe; do
           out_archive=$(pollScan "$scan_id_archive" "$archive_name")
           read -r result_archive date_archive <<< "${out_archive}"
@@ -200,9 +211,9 @@ runs:
 
           last_scan="-"
           if [[ -n "${date_exe}" && "${date_exe}" != "null" ]]; then
-            last_scan=$(date -u -d "@${date_exe}" "+%Y-%m-%d %H:%M:%S %Z")
+            last_scan=$(makeDateBadge "${date_exe}" "${scan_id_exe}")
           elif [[ -n "${date_archive}" && "${date_archive}" != "null" ]]; then
-            last_scan=$(date -u -d "@${date_archive}" "+%Y-%m-%d %H:%M:%S %Z")
+            last_scan=$(makeDateBadge "${date_archive}" "${scan_id_archive}")
           fi
 
           echo "${archive_name}"$'\t'"${exe_name}"$'\t'"${badge_archive}"$'\t'"${badge_exe}"$'\t'"${last_scan}" >> result_badges.tsv
