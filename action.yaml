@@ -102,7 +102,7 @@ runs:
 
         for file in extracted/*/${{ inputs.binary_pattern }}; do
           if [[ -f "$file" ]]; then
-            archive_name=$(basename (dirname "$file"))
+            archive_name=$(basename $(dirname "$file"))
             exe_name=$(basename "$file")
 
             scan_id_archive=$(scanFile "assets/$archive_name")
