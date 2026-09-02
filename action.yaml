@@ -169,7 +169,7 @@ runs:
           local vt_url="https://www.virustotal.com/gui/file-analysis/${scan_id}/detection"
 
           if [[ "$result" == "error" ]]; then
-            local badge_url="https://img.shields.io/badge/VirusTotal-scan%20timed%20out-lightgrey?logo=virustotal"
+            local badge_url="https://img.shields.io/badge/VirusTotal-scan%20timed%20out-lightgrey?logo=virustotal&style=flat"
           else
             local malicious="${result%%/*}"
             local total="${result##*/}"
@@ -183,7 +183,7 @@ runs:
               local color="red"
             fi
 
-            local badge_url="https://img.shields.io/badge/VirusTotal-${label}-${color}?logo=virustotal"
+            local badge_url="https://img.shields.io/badge/VirusTotal-${label}-${color}?logo=virustotal&style=flat"
           fi
 
           echo "[![VirusTotal - ${display_name}](${badge_url})](${vt_url})"
@@ -193,11 +193,11 @@ runs:
           local timestamp="$1"
           local scan_id="$2"
 
-          local formatted_date=$(date -u -d "@${timestamp}" "+%Y-%m-%d %H:%M:%S %Z")
+          local formatted_date=$(date -u -d "@${timestamp}" "+%Y-%m-%d %H:%M %Z")
           local encoded_date=$(echo "${formatted_date}" | sed 's/-/--/g; s/ /%20/g; s/:/%3A/g')
           local vt_url="https://www.virustotal.com/gui/file-analysis/${scan_id}/detection"
 
-          echo "[![Last Scan](https://img.shields.io/badge/Last%20Scan-${encoded_date}-blue?logo=virustotal)](${vt_url})"
+          echo "[![Last Scan](https://img.shields.io/badge/Last%20Scan-${encoded_date}-blue?logo=virustotal&style=flat)](${vt_url})"
         }
 
         while IFS=$'\t' read -r archive_name exe_name scan_id_archive scan_id_exe; do
