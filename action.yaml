@@ -79,34 +79,57 @@ runs:
         > scan_ids.tsv
 
         scanFile() {
-          echo "🔎 Scanning ${1}" >&2
+          local file="${1}"
+          echo "🔎 Scanning ${file}" >&2
+          local response
           # bigger than 32MB needs another api endpoint
-          if [[ $(stat -c%s "$1") -gt 33554432 ]]; then
+          if [[ $(stat -c%s "${file}") -gt 33554432 ]]; then
+            local upload_url_response
             upload_url_response=$(curl --silent --fail \
                 --url https://www.virustotal.com/api/v3/files/upload_url \
                 --header "x-apikey: ${{ inputs.vt_api_key }}")
-            upload_url=$(echo ${upload_url_response} | jq -r '.data')
+            local upload_url
+            upload_url=$(echo "${upload_url_response}" | jq -r '.data')
 
             response=$(curl --silent --fail --request POST \
-                --url ${upload_url} \
+                --url "${upload_url}" \
                 --header "x-apikey: ${{ inputs.vt_api_key }}" \
-                --form "file=@${1}")
+                --form "file=@${file}")
           else
             response=$(curl --silent --fail --request POST \
                 --url https://www.virustotal.com/api/v3/files \
                 --header "x-apikey: ${{ inputs.vt_api_key }}" \
-                --form "file=@${1}")
+                --form "file=@${file}")
           fi
-          echo ${response} | jq -r '.data.id'
+
+          local scan_id
+          scan_id=$(echo "${response}" | jq -r '.data.id // empty')
+          if [[ -z "${scan_id}" ]]; then
+            echo "❌ Error: Failed to get scan ID for ${file}." >&2
+            echo "Response: ${response}" >&2
+            exit 1
+          fi
+          echo "${scan_id}"
         }
+
+        declare -A ARCHIVE_SCANS
 
         for file in extracted/*/${{ inputs.binary_pattern }}; do
           if [[ -f "$file" ]]; then
             archive_name=$(basename $(dirname "$file"))
             exe_name=$(basename "$file")
 
-            scan_id_archive=$(scanFile "assets/$archive_name")
+            if [[ -n "${ARCHIVE_SCANS["$archive_name"]}" ]]; then
+              scan_id_archive="${ARCHIVE_SCANS["$archive_name"]}"
+              echo "  archive ${archive_name} already scanned: ${scan_id_archive}" >&2
+            else
+              scan_id_archive=$(scanFile "assets/$archive_name")
+              ARCHIVE_SCANS["$archive_name"]="${scan_id_archive}"
+              sleep 1
+            fi
+
             scan_id_exe=$(scanFile "$file")
+            sleep 1
 
             echo "${archive_name}"$'\t'"${exe_name}"$'\t'"${scan_id_archive}"$'\t'"${scan_id_exe}" >> scan_ids.tsv
             echo "  archive : https://www.virustotal.com/gui/file-analysis/${scan_id_archive}/detection"
@@ -130,6 +153,12 @@ runs:
           local scan_id="$1"
           local label="$2"
           local attempt=0
+
+          if [[ -z "${scan_id}" || "${scan_id}" == "null" ]]; then
+            echo "❌ Error: scan_id is empty for ${label}" >&2
+            echo "error"
+            return 1
+          fi
 
           echo "⏳ Polling ${label} (${scan_id})" >&2
 
