@@ -116,7 +116,7 @@ func TestVTClientPollScanTimeout(t *testing.T) {
 		t.Error("expected timed out, got completed")
 	}
 	if res.IsSuccess() {
-		t.Errorf("expected IsSuccess false for timed out scan")
+		t.Error("expected IsSuccess false for timed out scan")
 	}
 }
 

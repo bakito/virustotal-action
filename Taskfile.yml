@@ -54,7 +54,17 @@ tasks:
   clean:
     desc: Clean build artifacts and coverage report
     cmds:
-      - rm -f virustotal-action coverage.out
+      - rm -rf virustotal-action coverage.out dist
+
+  release:
+    desc: Run goreleaser release
+    cmds:
+      - goreleaser release --clean
+
+  snapshot:
+    desc: Run goreleaser snapshot
+    cmds:
+      - goreleaser release --snapshot --clean
 
   check:
     desc: Run tidy, lint, test and build

@@ -118,6 +118,92 @@
           "store_path": "/nix/store/sqm80s7p5kx9j4ia19rw3jy41ajx1v73-golangci-lint-2.13.1"
         }
       }
+    },
+    "goreleaser@2.17.1": {
+      "last_modified": "2026-08-27T07:16:00Z",
+      "resolved": "github:NixOS/nixpkgs/c27cdad491a991b11ed731760aa2ef8db0cb0410#goreleaser",
+      "source": "devbox-search",
+      "version": "2.17.1",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/brivs7pzf0y50f9k6ma06336smgx85f2-goreleaser-2.17.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/brivs7pzf0y50f9k6ma06336smgx85f2-goreleaser-2.17.1"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/b7wgnz8kxzaglnxwrixch6hxy0zbl0nf-goreleaser-2.17.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/b7wgnz8kxzaglnxwrixch6hxy0zbl0nf-goreleaser-2.17.1"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/452hvj253c9fvz35n4j8lal7s46l8i04-goreleaser-2.17.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/452hvj253c9fvz35n4j8lal7s46l8i04-goreleaser-2.17.1"
+        }
+      }
+    },
+    "upx@5.2.0": {
+      "last_modified": "2026-08-27T07:16:00Z",
+      "resolved": "github:NixOS/nixpkgs/c27cdad491a991b11ed731760aa2ef8db0cb0410#upx",
+      "source": "devbox-search",
+      "version": "5.2.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/172q686j8cx7vx05h2m9y4n2y56akfs3-upx-5.2.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/172q686j8cx7vx05h2m9y4n2y56akfs3-upx-5.2.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/6yv1yimwnbg5gn38s1x9zghha205jc6g-upx-5.2.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/6yv1yimwnbg5gn38s1x9zghha205jc6g-upx-5.2.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/x2q3c2jgl1s84xn8vws4z4z2z6c9kz4q-upx-5.2.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/x2q3c2jgl1s84xn8vws4z4z2z6c9kz4q-upx-5.2.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/c7n49n75g2g0p6vmmrg810s25q4rzanw-upx-5.2.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/c7n49n75g2g0p6vmmrg810s25q4rzanw-upx-5.2.0"
+        }
+      }
     }
   }
 }
