@@ -3,8 +3,63 @@
 version: '3'
 
 tasks:
+  default:
+    desc: Run lint, test and build
+    cmds:
+      - task: lint
+      - task: test
+      - task: build
+
   lint:
-    label: 'lint'
-    dir: '.'
+    desc: Run golangci-lint
     cmds:
       - golangci-lint run ./...
+
+  lint-fix:
+    desc: Run golangci-lint with auto-fix
+    cmds:
+      - golangci-lint run --fix ./...
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -race ./...
+
+  test-coverage:
+    desc: Run tests with coverage
+    cmds:
+      - go test -race -coverprofile=coverage.out -covermode=atomic ./...
+
+  coverage:
+    desc: Run tests with coverage and show report
+    cmds:
+      - task: test-coverage
+      - go tool cover -func=coverage.out
+
+  build:
+    desc: Build the action
+    cmds:
+      - go build -v .
+
+  tidy:
+    desc: Run go mod tidy
+    cmds:
+      - go mod tidy
+
+  fmt:
+    desc: Run go fmt
+    cmds:
+      - go fmt ./...
+
+  clean:
+    desc: Clean build artifacts and coverage report
+    cmds:
+      - rm -f virustotal-action coverage.out
+
+  check:
+    desc: Run tidy, lint, test and build
+    cmds:
+      - task: tidy
+      - task: lint
+      - task: test
+      - task: build
