@@ -57,3 +57,16 @@ jobs:
 
       - name: Build action
         run: devbox run task snapshot
+
+  test-action:
+    name: Test Action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Analyze Build Assets
+        uses: ./
+        with:
+          release_name: v1.0.5
+          vt_api_key: ${{secrets.VT_API_KEY}}
