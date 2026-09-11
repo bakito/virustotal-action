@@ -1,7 +1,7 @@
 # Virus Total Action
 
 Github action that downloads release assets extracts them an uploads the extracted binary as well as the archive to VirusTotal.
-A link to the reports will be added to the release info.
+A link to the reports will be added to the release info. If the release is a pre-release and all checks are successful, the release is changed to latest.
 
 ## Example Action config
 
@@ -12,7 +12,7 @@ name: Scan GitHub Release with VirusTotal
 
 on:
   release:
-    types: [released]
+    types: [prereleased, released]
 
 jobs:
   scan_release:
