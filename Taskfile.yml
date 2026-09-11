@@ -73,3 +73,9 @@ tasks:
       - task: lint
       - task: test
       - task: build
+
+  build-hello-world:
+    desc: Run goreleaser snapshot
+    dir: ./testing/hello-world
+    cmds:
+      - goreleaser release --clean --snapshot

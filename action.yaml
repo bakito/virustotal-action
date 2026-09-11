@@ -3,7 +3,7 @@ description: "Download release artifact archives, extracts them and analyzes the
 author: "bakito"
 inputs:
   release_name:
-    description: 'The github release name (use variable: "github.event.release.tag_name"'
+    description: 'The github release name (use variable: "github.event.release.tag_name")'
     required: true
   vt_api_key:
     description: 'The VirusTotal API Key (use variable: "secrets.VT_API_KEY")'
@@ -28,6 +28,10 @@ inputs:
     description: 'GitHub Token for API access'
     default: ${{ github.token }}
     required: false
+  update_to_latest:
+    description: 'Enable transition from pre-release to latest if all checks are successful'
+    default: 'false'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -43,6 +47,7 @@ runs:
         INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
         GITHUB_TOKEN: ${{ inputs.github_token }}
         INPUT_GITHUB_REPOSITORY: ${{ github.repository }}
+        INPUT_UPDATE_TO_LATEST: ${{ inputs.update_to_latest }}
       run: |
         cd "${{ github.action_path }}"
         go run .

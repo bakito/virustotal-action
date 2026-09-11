@@ -2,13 +2,17 @@ package archive
 
 import (
 	"cmp"
+	"context"
+	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
-	"github.com/mholt/archiver/v3"
+	"github.com/mholt/archives"
 
 	"github.com/bakito/virustotal-action/pkg/types"
 )
@@ -30,23 +34,106 @@ func ExtractAll(assetsDir, extractedDir string) error {
 		filePath := filepath.Join(assetsDir, entry.Name())
 		targetDir := filepath.Join(extractedDir, entry.Name())
 
-		u, err := archiver.ByExtension(filePath)
-		if err != nil {
-			// Not a recognized archive extension; skip extraction
-			continue
+		if err := extractFile(filePath, targetDir, entry.Name()); err != nil {
+			return err
 		}
-		unarchiver, ok := u.(archiver.Unarchiver)
-		if !ok {
-			continue
-		}
+	}
 
+	return nil
+}
+
+func extractFile(filePath, targetDir, entryName string) error {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open %s: %w", filePath, err)
+	}
+	defer f.Close()
+
+	ctx := context.Background()
+	format, reader, err := archives.Identify(ctx, filePath, f)
+	if err != nil {
+		if errors.Is(err, archives.NoMatch) {
+			// Not a recognized archive format; skip extraction
+			return nil
+		}
+		return nil
+	}
+
+	if extractor, ok := format.(archives.Extractor); ok {
 		if err := os.MkdirAll(targetDir, 0o755); err != nil {
 			return fmt.Errorf("failed to create target dir %s: %w", targetDir, err)
 		}
 
-		if err := unarchiver.Unarchive(filePath, targetDir); err != nil {
+		err = extractor.Extract(ctx, reader, func(_ context.Context, info archives.FileInfo) error {
+			name := filepath.Clean(info.NameInArchive)
+			if name == "." || name == "/" {
+				return nil
+			}
+			targetPath := filepath.Join(targetDir, name)
+			rel, err := filepath.Rel(targetDir, targetPath)
+			if err != nil || strings.HasPrefix(rel, "..") {
+				return fmt.Errorf("illegal file path in archive: %s", info.NameInArchive)
+			}
+
+			if info.IsDir() {
+				return os.MkdirAll(targetPath, 0o755)
+			}
+
+			if err := os.MkdirAll(filepath.Dir(targetPath), 0o755); err != nil {
+				return fmt.Errorf("failed to create directory for %s: %w", targetPath, err)
+			}
+
+			rc, err := info.Open()
+			if err != nil {
+				return fmt.Errorf("failed to open entry %s: %w", info.NameInArchive, err)
+			}
+			defer rc.Close()
+
+			outFile, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
+			if err != nil {
+				return fmt.Errorf("failed to create file %s: %w", targetPath, err)
+			}
+			defer outFile.Close()
+
+			if _, err := io.Copy(outFile, rc); err != nil {
+				return fmt.Errorf("failed to write file %s: %w", targetPath, err)
+			}
+			return nil
+		})
+		if err != nil {
 			return fmt.Errorf("failed to extract %s: %w", filePath, err)
 		}
+		return nil
+	}
+
+	if decompressor, ok := format.(archives.Decompressor); ok {
+		if err := os.MkdirAll(targetDir, 0o755); err != nil {
+			return fmt.Errorf("failed to create target dir %s: %w", targetDir, err)
+		}
+
+		rc, err := decompressor.OpenReader(reader)
+		if err != nil {
+			return fmt.Errorf("failed to decompress %s: %w", filePath, err)
+		}
+		defer rc.Close()
+
+		ext := filepath.Ext(entryName)
+		uncompressedName := strings.TrimSuffix(entryName, ext)
+		if uncompressedName == "" {
+			uncompressedName = entryName
+		}
+		targetPath := filepath.Join(targetDir, uncompressedName)
+
+		outFile, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+		if err != nil {
+			return fmt.Errorf("failed to create file %s: %w", targetPath, err)
+		}
+		defer outFile.Close()
+
+		if _, err := io.Copy(outFile, rc); err != nil {
+			return fmt.Errorf("failed to write file %s: %w", targetPath, err)
+		}
+		return nil
 	}
 
 	return nil

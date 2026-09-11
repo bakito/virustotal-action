@@ -1,7 +1,20 @@
 # Virus Total Action
 
 Github action that downloads release assets extracts them an uploads the extracted binary as well as the archive to VirusTotal.
-A link to the reports will be added to the release info. If the release is a pre-release and all checks are successful, the release is changed to latest.
+A link to the reports will be added to the release info. Optionally, if `update_to_latest` is enabled and the release is a pre-release and all checks are successful, the release is transitioned to latest.
+
+## Inputs
+
+| Input | Description | Required | Default |
+| --- | --- | --- | --- |
+| `release_name` | The GitHub release name (e.g., `${{ github.event.release.tag_name }}`). | **true** | |
+| `vt_api_key` | The VirusTotal API Key (e.g., `${{ secrets.VT_API_KEY }}`). | **true** | |
+| `download_release_artifact_pattern` | Download only assets that match a glob pattern. | `false` | `*windows*` |
+| `binary_pattern` | Pattern to select binary files for upload. | `false` | `*.exe` |
+| `poll_interval_seconds` | How many seconds to wait between polling VirusTotal for analysis status. | `false` | `30` |
+| `poll_max_attempts` | Maximum number of polling attempts before giving up on a scan. | `false` | `20` |
+| `github_token` | GitHub Token for API access. | `false` | `${{ github.token }}` |
+| `update_to_latest` | Enable transition from pre-release to latest if all checks are successful. | `false` | `false` |
 
 ## Example Action config
 

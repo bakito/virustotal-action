@@ -14,6 +14,7 @@ type Config struct {
 	GitHubRepository               string
 	AssetsDir                      string
 	ExtractedDir                   string
+	UpdateToLatest                 bool
 }
 
 // ScanResult holds the polling results for a single scan.

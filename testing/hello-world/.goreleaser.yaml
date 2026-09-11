@@ -6,13 +6,13 @@ before:
     - go mod tidy
 
 builds:
-  - id: virustotal-action
-    binary: virustotal-action
+  - id: hello-world
+    binary: hello-world
     main: .
     env:
       - CGO_ENABLED=0
     goos:
-      - linux
+      - windows
     goarch:
       - amd64
     flags:
@@ -20,19 +20,17 @@ builds:
     ldflags:
       - -s -w
 
-upx:
-  - enabled: true
-
 archives:
   - id: default
+    name_template: "hello-world_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     formats:
-      - tar.gz
+      - zip
 
 checksum:
   name_template: checksums.txt
 
 snapshot:
-  version_template: "{{ incpatch .Version }}-snapshot"
+  version_template: "{{ incpatch .Version }}"
 
 changelog:
   sort: asc
@@ -41,8 +39,3 @@ changelog:
       - "^docs:"
       - "^test:"
       - '^chore'
-
-release:
-  github:
-    owner: bakito
-    name: virustotal-action

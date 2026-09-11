@@ -118,6 +118,7 @@ func TestRunnerAllChecksSuccessfulPromotesPrerelease(t *testing.T) {
 		PollInterval:                   1 * time.Millisecond,
 		PollMaxAttempts:                1,
 		GitHubRepository:               "bakito/virustotal-action",
+		UpdateToLatest:                 true,
 	}
 
 	err := runner.Run(context.Background(), cfg)
@@ -143,7 +144,50 @@ func TestRunnerAllChecksSuccessfulPromotesPrerelease(t *testing.T) {
 
 	// Verify promotion to latest
 	if !mockGH.updateToLatest {
-		t.Error("expected updateToLatest to be true for clean prerelease")
+		t.Error("expected updateToLatest to be true for clean prerelease when UpdateToLatest is true")
+	}
+}
+
+func TestRunnerAllChecksSuccessfulDefaultDisabled(t *testing.T) {
+	mockGH := &mockGHClient{
+		release: &gh.RepositoryRelease{
+			ID:         gh.Ptr(int64(1001)),
+			TagName:    gh.Ptr("v1.0.0-rc1"),
+			Body:       gh.Ptr("Initial release notes"),
+			Prerelease: gh.Ptr(true),
+		},
+	}
+	mockVT := &mockVTClient{
+		pollResults: map[string]*types.ScanResult{
+			"scan-app-windows.zip": {ScanID: "scan-app-windows.zip", Malicious: 0, Total: 70, Date: 1710513000},
+			"scan-app.exe":         {ScanID: "scan-app.exe", Malicious: 0, Total: 70, Date: 1710513000},
+		},
+	}
+
+	runner := &Runner{
+		GHClient: mockGH,
+		VTClient: mockVT,
+	}
+
+	cfg := &types.Config{
+		ReleaseName:                    "v1.0.0-rc1",
+		VTApiKey:                       "secret-vt-key",
+		DownloadReleaseArtifactPattern: "*windows*",
+		BinaryPattern:                  "*.exe",
+		PollInterval:                   1 * time.Millisecond,
+		PollMaxAttempts:                1,
+		GitHubRepository:               "bakito/virustotal-action",
+		UpdateToLatest:                 false,
+	}
+
+	err := runner.Run(context.Background(), cfg)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Verify not promoted to latest when UpdateToLatest is false
+	if mockGH.updateToLatest {
+		t.Error("expected updateToLatest to be false when UpdateToLatest is false")
 	}
 }
 

@@ -173,7 +173,7 @@ func (r *Runner) Run(ctx context.Context, cfg *types.Config) error {
 	updatedNotes := badges.CombineReleaseNotes(release.GetBody(), reportTable)
 
 	isPrerelease := release.GetPrerelease()
-	updateToLatest := isPrerelease && allChecksSuccessful
+	updateToLatest := cfg.UpdateToLatest && isPrerelease && allChecksSuccessful
 	if updateToLatest {
 		fmt.Fprintln(os.Stderr, "All checks successful on pre-release; updating release to latest.")
 	}

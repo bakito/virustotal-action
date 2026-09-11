@@ -33,6 +33,7 @@ func run() error {
 		flagPollMaxAttempts string
 		flagGitHubToken     string
 		flagGitHubRepo      string
+		flagUpdateToLatest  string
 	)
 
 	flag.StringVar(&flagReleaseName, "release-name", "", "The github release name")
@@ -48,6 +49,12 @@ func run() error {
 	flag.StringVar(&flagPollMaxAttempts, "poll-max-attempts", "", "Maximum number of polling attempts")
 	flag.StringVar(&flagGitHubToken, "github-token", "", "GitHub token for API access")
 	flag.StringVar(&flagGitHubRepo, "repo", "", "GitHub repository (owner/repo)")
+	flag.StringVar(
+		&flagUpdateToLatest,
+		"update-to-latest",
+		"",
+		"Enable transition from pre-release to latest if all checks are successful",
+	)
 
 	flag.Parse()
 
@@ -74,6 +81,16 @@ func run() error {
 	)
 	githubToken := cmp.Or(flagGitHubToken, os.Getenv("INPUT_GITHUB_TOKEN"), os.Getenv("GITHUB_TOKEN"), os.Getenv("GH_TOKEN"))
 	githubRepo := cmp.Or(flagGitHubRepo, os.Getenv("INPUT_GITHUB_REPOSITORY"), os.Getenv("GITHUB_REPOSITORY"))
+	updateToLatestStr := cmp.Or(
+		flagUpdateToLatest,
+		os.Getenv("INPUT_UPDATE_TO_LATEST"),
+		os.Getenv("INPUT_PRERELEASE_TO_LATEST"),
+		os.Getenv("INPUT_TRANSITION_TO_LATEST"),
+		os.Getenv("UPDATE_TO_LATEST"),
+		os.Getenv("PRERELEASE_TO_LATEST"),
+		os.Getenv("TRANSITION_TO_LATEST"),
+		"false",
+	)
 
 	if releaseName == "" {
 		return errors.New("'release_name' input is required but not provided")
@@ -92,6 +109,8 @@ func run() error {
 		pollMaxAttempts = 20
 	}
 
+	updateToLatest, _ := strconv.ParseBool(updateToLatestStr)
+
 	cfg := &types.Config{
 		ReleaseName:                    releaseName,
 		VTApiKey:                       vtAPIKey,
@@ -101,6 +120,7 @@ func run() error {
 		PollMaxAttempts:                pollMaxAttempts,
 		GitHubToken:                    githubToken,
 		GitHubRepository:               githubRepo,
+		UpdateToLatest:                 updateToLatest,
 	}
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
