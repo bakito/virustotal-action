@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install devbox
-        uses: bakito/devbox-install-action@40b18bfd84de0cf9d3570c1a3ec9f73aed783e34
+        uses: bakito/devbox-install-action@main
         with:
           enable-cache: 'true'
 
@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install devbox
-        uses: bakito/devbox-install-action@40b18bfd84de0cf9d3570c1a3ec9f73aed783e34
+        uses: bakito/devbox-install-action@main
         with:
           enable-cache: 'restore'
 
@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install devbox
-        uses: bakito/devbox-install-action@40b18bfd84de0cf9d3570c1a3ec9f73aed783e34
+        uses: bakito/devbox-install-action@main
         with:
           enable-cache: 'restore'
 
