@@ -26,6 +26,10 @@ func IsArchive(filename string) bool {
 	if err != nil {
 		return false
 	}
+	ext := format.Extension()
+	if ext == "" || !strings.HasSuffix(strings.ToLower(filename), strings.ToLower(ext)) {
+		return false
+	}
 	_, isExtractor := format.(archives.Extractor)
 	_, isDecompressor := format.(archives.Decompressor)
 	return isExtractor || isDecompressor
@@ -45,6 +49,9 @@ func ExtractAll(assetsDir, extractedDir string) error {
 		if entry.IsDir() {
 			continue
 		}
+		if !IsArchive(entry.Name()) {
+			continue
+		}
 		filePath := filepath.Join(assetsDir, entry.Name())
 		targetDir := filepath.Join(extractedDir, entry.Name())
 
@@ -57,6 +64,10 @@ func ExtractAll(assetsDir, extractedDir string) error {
 }
 
 func extractFile(filePath, targetDir, entryName string) error {
+	if !IsArchive(entryName) {
+		return nil
+	}
+
 	f, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to open %s: %w", filePath, err)

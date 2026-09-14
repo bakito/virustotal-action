@@ -99,6 +99,15 @@ func TestExtractAllAndFindBinaryTargets(t *testing.T) {
 		t.Fatalf("failed to create checksums.txt: %v", err)
 	}
 
+	// 5. Create an SBOM json file with an archive name in its prefix
+	if err := os.WriteFile(
+		filepath.Join(assetsDir, "gws_0.5.2_windows_amd64.zip.sbom.json"),
+		[]byte(`{"sbom": true}`),
+		0o644,
+	); err != nil {
+		t.Fatalf("failed to create sbom file: %v", err)
+	}
+
 	// Extract
 	if err := ExtractAll(assetsDir, extractedDir); err != nil {
 		t.Fatalf("ExtractAll failed: %v", err)
@@ -153,6 +162,14 @@ func TestIsArchive(t *testing.T) {
 		{"single.exe.gz", true},
 		{"app-windows.exe", false},
 		{"app-windows.sbom.json", false},
+		{"app_0.5.2_windows_amd64.zip.sbom.json", false},
+		{"app_0.5.2_windows_amd64.tar.gz.sbom.json", false},
+		{"app_0.5.2_windows_amd64.zip.sig", false},
+		{"app_0.5.2_windows_amd64.zip.sha256", false},
+		{"app_0.5.2_windows_amd64.7z.sbom.json", false},
+		{"single.exe.gz.sbom.json", false},
+		{"app-windows.ZIP", true},
+		{"app-linux.TAR.GZ", true},
 		{"app-windows.json", false},
 		{"checksums.txt", false},
 		{"checksums.sha256", false},
