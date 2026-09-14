@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	gh "github.com/google/go-github/v69/github"
+	gh "github.com/google/go-github/v91/github"
 
 	"github.com/bakito/virustotal-action/pkg/types"
 )
@@ -92,10 +92,10 @@ func (m *mockVTClient) PollScan(
 func TestRunnerAllChecksSuccessfulPromotesPrerelease(t *testing.T) {
 	mockGH := &mockGHClient{
 		release: &gh.RepositoryRelease{
-			ID:         gh.Ptr(int64(1001)),
-			TagName:    gh.Ptr("v1.0.0-rc1"),
-			Body:       gh.Ptr("Initial release notes"),
-			Prerelease: gh.Ptr(true),
+			ID:         1001,
+			TagName:    "v1.0.0-rc1",
+			Body:       new("Initial release notes"),
+			Prerelease: true,
 		},
 	}
 	mockVT := &mockVTClient{
@@ -151,10 +151,10 @@ func TestRunnerAllChecksSuccessfulPromotesPrerelease(t *testing.T) {
 func TestRunnerAllChecksSuccessfulDefaultDisabled(t *testing.T) {
 	mockGH := &mockGHClient{
 		release: &gh.RepositoryRelease{
-			ID:         gh.Ptr(int64(1001)),
-			TagName:    gh.Ptr("v1.0.0-rc1"),
-			Body:       gh.Ptr("Initial release notes"),
-			Prerelease: gh.Ptr(true),
+			ID:         1001,
+			TagName:    "v1.0.0-rc1",
+			Body:       new("Initial release notes"),
+			Prerelease: true,
 		},
 	}
 	mockVT := &mockVTClient{
@@ -194,10 +194,10 @@ func TestRunnerAllChecksSuccessfulDefaultDisabled(t *testing.T) {
 func TestRunnerMaliciousDetectionsDoesNotPromote(t *testing.T) {
 	mockGH := &mockGHClient{
 		release: &gh.RepositoryRelease{
-			ID:         gh.Ptr(int64(1002)),
-			TagName:    gh.Ptr("v1.0.0-rc2"),
-			Body:       gh.Ptr("Notes"),
-			Prerelease: gh.Ptr(true),
+			ID:         1002,
+			TagName:    "v1.0.0-rc2",
+			Body:       new("Notes"),
+			Prerelease: true,
 		},
 	}
 	mockVT := &mockVTClient{

@@ -5,20 +5,19 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"testing"
 
-	gh "github.com/google/go-github/v69/github"
+	gh "github.com/google/go-github/v91/github"
 )
 
 func TestGHClientGetRelease(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/owner/repo/releases/tags/v1.0.0", func(w http.ResponseWriter, _ *http.Request) {
 		rel := &gh.RepositoryRelease{
-			ID:      gh.Ptr(int64(101)),
-			TagName: gh.Ptr("v1.0.0"),
-			Name:    gh.Ptr("Release v1.0.0"),
+			ID:      101,
+			TagName: "v1.0.0",
+			Name:    new("Release v1.0.0"),
 		}
 		_ = json.NewEncoder(w).Encode(rel)
 	})
@@ -26,9 +25,9 @@ func TestGHClientGetRelease(t *testing.T) {
 	mux.HandleFunc("/repos/owner/repo/releases", func(w http.ResponseWriter, _ *http.Request) {
 		releases := []*gh.RepositoryRelease{
 			{
-				ID:      gh.Ptr(int64(102)),
-				TagName: gh.Ptr("v2.0.0-rc1"),
-				Name:    gh.Ptr("v2.0.0-ReleaseCandidate"),
+				ID:      102,
+				TagName: "v2.0.0-rc1",
+				Name:    new("v2.0.0-ReleaseCandidate"),
 			},
 		}
 		_ = json.NewEncoder(w).Encode(releases)
@@ -37,9 +36,7 @@ func TestGHClientGetRelease(t *testing.T) {
 	ts := httptest.NewServer(mux)
 	defer ts.Close()
 
-	u, _ := url.Parse(ts.URL + "/")
-	client := gh.NewClient(ts.Client())
-	client.BaseURL = u
+	client, _ := gh.NewClient(gh.WithHTTPClient(ts.Client()), gh.WithURLs(new(ts.URL+"/"), new(ts.URL+"/")))
 
 	ghc := &ghClient{
 		client:     client,
@@ -77,9 +74,7 @@ func TestGHClientDownloadAssets(t *testing.T) {
 	ts := httptest.NewServer(mux)
 	defer ts.Close()
 
-	u, _ := url.Parse(ts.URL + "/")
-	client := gh.NewClient(ts.Client())
-	client.BaseURL = u
+	client, _ := gh.NewClient(gh.WithHTTPClient(ts.Client()), gh.WithURLs(new(ts.URL+"/"), new(ts.URL+"/")))
 
 	ghc := &ghClient{
 		client:     client,
@@ -90,12 +85,12 @@ func TestGHClientDownloadAssets(t *testing.T) {
 	release := &gh.RepositoryRelease{
 		Assets: []*gh.ReleaseAsset{
 			{
-				ID:   gh.Ptr(int64(555)),
-				Name: gh.Ptr("app-windows.zip"),
+				ID:   new(int64(555)),
+				Name: new("app-windows.zip"),
 			},
 			{
-				ID:   gh.Ptr(int64(666)),
-				Name: gh.Ptr("app-linux.tar.gz"),
+				ID:   new(int64(666)),
+				Name: new("app-linux.tar.gz"),
 			},
 		},
 	}
@@ -126,7 +121,7 @@ func TestGHClientUpdateReleaseNotes(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/owner/repo/releases/101", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPatch {
-			var editReq gh.RepositoryRelease
+			var editReq gh.UpdateReleaseRequest
 			_ = json.NewDecoder(r.Body).Decode(&editReq)
 			receivedBody = editReq.GetBody()
 			receivedPrerelease = editReq.Prerelease
@@ -140,9 +135,7 @@ func TestGHClientUpdateReleaseNotes(t *testing.T) {
 	ts := httptest.NewServer(mux)
 	defer ts.Close()
 
-	u, _ := url.Parse(ts.URL + "/")
-	client := gh.NewClient(ts.Client())
-	client.BaseURL = u
+	client, _ := gh.NewClient(gh.WithHTTPClient(ts.Client()), gh.WithURLs(new(ts.URL+"/"), new(ts.URL+"/")))
 
 	ghc := &ghClient{
 		client:     client,
