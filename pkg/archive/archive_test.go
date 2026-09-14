@@ -136,6 +136,37 @@ func TestExtractAllAndFindBinaryTargets(t *testing.T) {
 	}
 }
 
+func TestIsArchive(t *testing.T) {
+	tests := []struct {
+		filename string
+		expected bool
+	}{
+		{"app-windows.zip", true},
+		{"app-linux.tar.gz", true},
+		{"app-linux.tgz", true},
+		{"app-linux.tar.bz2", true},
+		{"app-linux.tar.xz", true},
+		{"app-linux.tar.zst", true},
+		{"app.7z", true},
+		{"app.rar", true},
+		{"app.tar", true},
+		{"single.exe.gz", true},
+		{"app-windows.exe", false},
+		{"app-windows.sbom.json", false},
+		{"app-windows.json", false},
+		{"checksums.txt", false},
+		{"checksums.sha256", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.filename, func(t *testing.T) {
+			if got := IsArchive(tt.filename); got != tt.expected {
+				t.Errorf("IsArchive(%q) = %v, expected %v", tt.filename, got, tt.expected)
+			}
+		})
+	}
+}
+
 func TestNonExistentDirs(t *testing.T) {
 	if err := ExtractAll("/non/existent/path", "/tmp/extracted"); err != nil {
 		t.Errorf("expected nil error for non-existent assets dir, got %v", err)

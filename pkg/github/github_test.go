@@ -70,6 +70,14 @@ func TestGHClientDownloadAssets(t *testing.T) {
 		w.Header().Set("Content-Type", "application/octet-stream")
 		_, _ = w.Write([]byte("asset-555-content"))
 	})
+	mux.HandleFunc("/repos/owner/repo/releases/assets/666", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/octet-stream")
+		_, _ = w.Write([]byte("asset-666-content"))
+	})
+	mux.HandleFunc("/repos/owner/repo/releases/assets/777", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/octet-stream")
+		_, _ = w.Write([]byte("asset-777-content"))
+	})
 
 	ts := httptest.NewServer(mux)
 	defer ts.Close()
@@ -92,24 +100,72 @@ func TestGHClientDownloadAssets(t *testing.T) {
 				ID:   new(int64(666)),
 				Name: new("app-linux.tar.gz"),
 			},
+			{
+				ID:   new(int64(777)),
+				Name: new("app-windows.exe"),
+			},
+			{
+				ID:   new(int64(888)),
+				Name: new("app-windows.sbom.json"),
+			},
+			{
+				ID:   new(int64(999)),
+				Name: new("app-windows.json"),
+			},
 		},
 	}
 
+	// 1. Download matching *windows* assets (zip and exe, ignoring json and sbom.json)
 	downloaded, err := ghc.DownloadReleaseAssets(context.Background(), "owner", "repo", release, "*windows*", destDir)
 	if err != nil {
 		t.Fatalf("DownloadReleaseAssets failed: %v", err)
 	}
 
-	if len(downloaded) != 1 {
-		t.Fatalf("expected 1 downloaded asset, got %d", len(downloaded))
+	if len(downloaded) != 2 {
+		t.Fatalf("expected 2 downloaded assets (zip and exe), got %d: %v", len(downloaded), downloaded)
 	}
 
-	content, err := os.ReadFile(downloaded[0])
+	content1, err := os.ReadFile(downloaded[0])
 	if err != nil {
 		t.Fatalf("failed to read downloaded file: %v", err)
 	}
-	if string(content) != "asset-555-content" {
-		t.Errorf("unexpected content: %s", string(content))
+	if string(content1) != "asset-555-content" {
+		t.Errorf("unexpected content: %s", string(content1))
+	}
+
+	content2, err := os.ReadFile(downloaded[1])
+	if err != nil {
+		t.Fatalf("failed to read downloaded file: %v", err)
+	}
+	if string(content2) != "asset-777-content" {
+		t.Errorf("unexpected content: %s", string(content2))
+	}
+
+	// 2. Download matching *linux* assets (tar.gz)
+	destDirLinux := t.TempDir()
+	downloadedLinux, err := ghc.DownloadReleaseAssets(context.Background(), "owner", "repo", release, "*linux*", destDirLinux)
+	if err != nil {
+		t.Fatalf("DownloadReleaseAssets for linux failed: %v", err)
+	}
+	if len(downloadedLinux) != 1 {
+		t.Fatalf("expected 1 downloaded asset (tar.gz), got %d: %v", len(downloadedLinux), downloadedLinux)
+	}
+	contentLinux, err := os.ReadFile(downloadedLinux[0])
+	if err != nil {
+		t.Fatalf("failed to read downloaded file: %v", err)
+	}
+	if string(contentLinux) != "asset-666-content" {
+		t.Errorf("unexpected content: %s", string(contentLinux))
+	}
+
+	// 3. Download matching all assets (*) -> should download zip, tar.gz, exe; ignoring sbom.json and json
+	destDirAll := t.TempDir()
+	downloadedAll, err := ghc.DownloadReleaseAssets(context.Background(), "owner", "repo", release, "*", destDirAll)
+	if err != nil {
+		t.Fatalf("DownloadReleaseAssets for all failed: %v", err)
+	}
+	if len(downloadedAll) != 3 {
+		t.Fatalf("expected 3 downloaded assets (zip, tar.gz, exe), got %d: %v", len(downloadedAll), downloadedAll)
 	}
 }
 

@@ -7,8 +7,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/go-github/v91/github"
+
+	"github.com/bakito/virustotal-action/pkg/archive"
 )
 
 // Client defines the interface for GitHub operations.
@@ -110,6 +113,10 @@ func (c *ghClient) DownloadReleaseAssets(
 			continue
 		}
 
+		if !isSupportedAsset(name) {
+			continue
+		}
+
 		destFile := filepath.Join(destDir, name)
 		if err := c.downloadAsset(ctx, owner, repo, asset.GetID(), destFile); err != nil {
 			return nil, fmt.Errorf("failed to download asset %s: %w", name, err)
@@ -118,6 +125,13 @@ func (c *ghClient) DownloadReleaseAssets(
 	}
 
 	return downloaded, nil
+}
+
+func isSupportedAsset(name string) bool {
+	if strings.EqualFold(filepath.Ext(name), ".exe") {
+		return true
+	}
+	return archive.IsArchive(name)
 }
 
 func (c *ghClient) downloadAsset(ctx context.Context, owner, repo string, assetID int64, destFile string) error {
