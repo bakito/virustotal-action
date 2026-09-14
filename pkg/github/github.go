@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/google/go-github/v69/github"
+	"github.com/google/go-github/v91/github"
 )
 
 // Client defines the interface for GitHub operations.
