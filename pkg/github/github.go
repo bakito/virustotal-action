@@ -37,10 +37,15 @@ func NewClient(token string, opts ...Option) Client {
 		opt(c)
 	}
 
-	baseClient := github.NewClient(c.httpClient)
-	if token != "" {
-		baseClient = baseClient.WithAuthToken(token)
+	var clientOpts []github.ClientOptionsFunc
+	if c.httpClient != nil {
+		clientOpts = append(clientOpts, github.WithHTTPClient(c.httpClient))
 	}
+	if token != "" {
+		clientOpts = append(clientOpts, github.WithAuthToken(token))
+	}
+
+	baseClient, _ := github.NewClient(clientOpts...)
 	c.client = baseClient
 
 	return c
@@ -162,14 +167,14 @@ func (c *ghClient) UpdateReleaseNotes(
 	notes string,
 	updateToLatest bool,
 ) error {
-	editReq := &github.RepositoryRelease{
-		Body: github.Ptr(notes),
+	editReq := github.UpdateReleaseRequest{
+		Body: &notes,
 	}
 	if updateToLatest {
-		editReq.Prerelease = github.Ptr(false)
-		editReq.MakeLatest = github.Ptr("true")
+		editReq.Prerelease = new(false)
+		editReq.MakeLatest = new("true")
 	}
 
-	_, _, err := c.client.Repositories.EditRelease(ctx, owner, repo, releaseID, editReq)
+	_, _, err := c.client.Repositories.UpdateRelease(ctx, owner, repo, releaseID, editReq)
 	return err
 }
