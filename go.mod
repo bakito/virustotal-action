@@ -28,5 +28,5 @@ require (
 	github.com/thedevsaddam/gojsonq/v2 v2.5.2 // indirect
 	github.com/ulikunitz/xz v0.5.16 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/text v0.39.0 // indirect
 )
