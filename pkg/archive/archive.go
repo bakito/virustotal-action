@@ -17,6 +17,20 @@ import (
 	"github.com/bakito/virustotal-action/pkg/types"
 )
 
+// IsArchive returns true if the filename represents a recognized archive or compressed format.
+func IsArchive(filename string) bool {
+	if archives.PathIsArchive(filename) {
+		return true
+	}
+	format, _, err := archives.Identify(context.Background(), filename, nil)
+	if err != nil {
+		return false
+	}
+	_, isExtractor := format.(archives.Extractor)
+	_, isDecompressor := format.(archives.Decompressor)
+	return isExtractor || isDecompressor
+}
+
 // ExtractAll extracts all archive files in assetsDir to corresponding subdirectories in extractedDir.
 func ExtractAll(assetsDir, extractedDir string) error {
 	entries, err := os.ReadDir(assetsDir)
