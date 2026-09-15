@@ -112,6 +112,14 @@ func TestGHClientDownloadAssets(t *testing.T) {
 				ID:   new(int64(999)),
 				Name: new("app-windows.json"),
 			},
+			{
+				ID:   new(int64(1001)),
+				Name: new("gws_0.5.2_windows_amd64.zip.sbom.json"),
+			},
+			{
+				ID:   new(int64(1002)),
+				Name: new("gws_0.5.2_linux_amd64.tar.gz.sbom.json"),
+			},
 		},
 	}
 
