@@ -151,11 +151,16 @@ func TestIsArchive(t *testing.T) {
 		{"app.rar", true},
 		{"app.tar", true},
 		{"single.exe.gz", true},
+		{"gws_0.5.3_windows_amd64.zip", true},
 		{"app-windows.exe", false},
 		{"app-windows.sbom.json", false},
+		{"gws_0.5.3_windows_amd64.zip.sbom.json", false},
 		{"app-windows.json", false},
 		{"checksums.txt", false},
 		{"checksums.sha256", false},
+		{"app.tar.gz.sha256", false},
+		{"app.zip.sig", false},
+		{"app.zip.pem", false},
 	}
 
 	for _, tt := range tests {
