@@ -164,6 +164,7 @@ func TestIsArchive(t *testing.T) {
 		{"app-windows.sbom.json", false},
 		{"app_0.5.2_windows_amd64.zip.sbom.json", false},
 		{"app_0.5.2_windows_amd64.tar.gz.sbom.json", false},
+		{"app_0.5.2_windows_amd64.zip", true},
 		{"app_0.5.2_windows_amd64.zip.sig", false},
 		{"app_0.5.2_windows_amd64.zip.sha256", false},
 		{"app_0.5.2_windows_amd64.7z.sbom.json", false},

@@ -17,22 +17,60 @@ import (
 	"github.com/bakito/virustotal-action/pkg/types"
 )
 
+var archiveExtensions = []string{
+	// Compound tar extensions
+	".tar.gz",
+	".tar.bz2",
+	".tar.xz",
+	".tar.zst",
+	".tar.lz4",
+	".tar.sz",
+	".tar.s2",
+	".tar.lz",
+	".tar.br",
+
+	// Short tar extensions
+	".tgz",
+	".tbz",
+	".tbz2",
+	".txz",
+	".tzst",
+	".tlz4",
+	".tsz",
+	".ts2",
+	".tlz",
+	".tbr",
+
+	// Archive formats
+	".zip",
+	".tar",
+	".7z",
+	".rar",
+
+	// Single compressed file formats
+	".gz",
+	".bz2",
+	".xz",
+	".zst",
+	".lz4",
+	".sz",
+	".s2",
+	".lz",
+	".br",
+}
+
 // IsArchive returns true if the filename represents a recognized archive or compressed format.
 func IsArchive(filename string) bool {
 	if archives.PathIsArchive(filename) {
 		return true
 	}
-	format, _, err := archives.Identify(context.Background(), filename, nil)
-	if err != nil {
-		return false
+	lower := strings.ToLower(filename)
+	for _, ext := range archiveExtensions {
+		if strings.HasSuffix(lower, ext) {
+			return true
+		}
 	}
-	ext := format.Extension()
-	if ext == "" || !strings.HasSuffix(strings.ToLower(filename), strings.ToLower(ext)) {
-		return false
-	}
-	_, isExtractor := format.(archives.Extractor)
-	_, isDecompressor := format.(archives.Decompressor)
-	return isExtractor || isDecompressor
+	return false
 }
 
 // ExtractAll extracts all archive files in assetsDir to corresponding subdirectories in extractedDir.
