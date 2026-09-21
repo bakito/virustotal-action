@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/go-github/v91/github"
+	"github.com/google/go-github/v92/github"
 
 	"github.com/bakito/virustotal-action/pkg/archive"
 )

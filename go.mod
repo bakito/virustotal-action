@@ -4,7 +4,7 @@ go 1.27.1
 
 require (
 	github.com/VirusTotal/vt-go v1.1.0
-	github.com/google/go-github/v91 v91.0.0
+	github.com/google/go-github/v92 v92.0.0
 	github.com/mholt/archives v0.1.5
 )
 
