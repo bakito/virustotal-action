@@ -100,11 +100,12 @@ func TestExtractAllAndFindBinaryTargets(t *testing.T) {
 	}
 
 	// 5. Create an SBOM json file with an archive name in its prefix
-	if err := os.WriteFile(
+	err = os.WriteFile(
 		filepath.Join(assetsDir, "gws_0.5.2_windows_amd64.zip.sbom.json"),
 		[]byte(`{"sbom": true}`),
 		0o644,
-	); err != nil {
+	)
+	if err != nil {
 		t.Fatalf("failed to create sbom file: %v", err)
 	}
 
