@@ -157,51 +157,41 @@
         }
       }
     },
-    "upx@5.2.0": {
-      "last_modified": "2026-08-27T07:16:00Z",
-      "resolved": "github:NixOS/nixpkgs/c27cdad491a991b11ed731760aa2ef8db0cb0410#upx",
+    "upx@5.2.1": {
+      "last_modified": "2026-10-08T19:21:32Z",
+      "resolved": "github:NixOS/nixpkgs/8edc0c72e3a38faf5434e40d1f19431125fe4b30#upx",
       "source": "devbox-search",
-      "version": "5.2.0",
+      "version": "5.2.1",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/172q686j8cx7vx05h2m9y4n2y56akfs3-upx-5.2.0",
+              "path": "/nix/store/y2ikj5p7w45j97lq4zjmf2rx7mr2ya53-upx-5.2.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/172q686j8cx7vx05h2m9y4n2y56akfs3-upx-5.2.0"
+          "store_path": "/nix/store/y2ikj5p7w45j97lq4zjmf2rx7mr2ya53-upx-5.2.1"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/6yv1yimwnbg5gn38s1x9zghha205jc6g-upx-5.2.0",
+              "path": "/nix/store/q2dpz9bqmycfxb0r4skj9ybv0idw7ywx-upx-5.2.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/6yv1yimwnbg5gn38s1x9zghha205jc6g-upx-5.2.0"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/x2q3c2jgl1s84xn8vws4z4z2z6c9kz4q-upx-5.2.0",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/x2q3c2jgl1s84xn8vws4z4z2z6c9kz4q-upx-5.2.0"
+          "store_path": "/nix/store/q2dpz9bqmycfxb0r4skj9ybv0idw7ywx-upx-5.2.1"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/c7n49n75g2g0p6vmmrg810s25q4rzanw-upx-5.2.0",
+              "path": "/nix/store/6yvbc5syk693i00kgiv464yks28g4xns-upx-5.2.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/c7n49n75g2g0p6vmmrg810s25q4rzanw-upx-5.2.0"
+          "store_path": "/nix/store/6yvbc5syk693i00kgiv464yks28g4xns-upx-5.2.1"
         }
       }
     }
