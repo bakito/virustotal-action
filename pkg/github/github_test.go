@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	gh "github.com/google/go-github/v92/github"
+	gh "github.com/google/go-github/v93/github"
 )
 
 func TestGHClientGetRelease(t *testing.T) {
