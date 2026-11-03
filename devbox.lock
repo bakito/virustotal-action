@@ -157,41 +157,41 @@
         }
       }
     },
-    "upx@5.2.1": {
-      "last_modified": "2026-10-08T19:21:32Z",
-      "resolved": "github:NixOS/nixpkgs/8edc0c72e3a38faf5434e40d1f19431125fe4b30#upx",
+    "upx@5.3.0": {
+      "last_modified": "2026-11-03T03:15:56Z",
+      "resolved": "github:NixOS/nixpkgs/9a6cbf4722bdbbef65f9e0400452ca088e31dc4b#upx",
       "source": "devbox-search",
-      "version": "5.2.1",
+      "version": "5.3.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/y2ikj5p7w45j97lq4zjmf2rx7mr2ya53-upx-5.2.1",
+              "path": "/nix/store/ifnqdmwidn90zc9l1cwgnp3k5369y9lw-upx-5.3.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/y2ikj5p7w45j97lq4zjmf2rx7mr2ya53-upx-5.2.1"
+          "store_path": "/nix/store/ifnqdmwidn90zc9l1cwgnp3k5369y9lw-upx-5.3.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/q2dpz9bqmycfxb0r4skj9ybv0idw7ywx-upx-5.2.1",
+              "path": "/nix/store/jxpi94qf73h3jr9jq5jy361271bykrr9-upx-5.3.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/q2dpz9bqmycfxb0r4skj9ybv0idw7ywx-upx-5.2.1"
+          "store_path": "/nix/store/jxpi94qf73h3jr9jq5jy361271bykrr9-upx-5.3.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/6yvbc5syk693i00kgiv464yks28g4xns-upx-5.2.1",
+              "path": "/nix/store/wnj4zw3pqry52mq4451ba3qyp58w5m1l-upx-5.3.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/6yvbc5syk693i00kgiv464yks28g4xns-upx-5.2.1"
+          "store_path": "/nix/store/wnj4zw3pqry52mq4451ba3qyp58w5m1l-upx-5.3.0"
         }
       }
     }
