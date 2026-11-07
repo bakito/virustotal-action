@@ -4,7 +4,7 @@
     "golangci-lint@2.15.0",
     "go@1.27.3",
     "go-task@3.53.1",
-    "goreleaser@2.19.0",
+    "goreleaser@2.20.0",
     "upx@5.3.0"
   ],
   "shell": {
