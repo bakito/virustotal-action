@@ -119,41 +119,41 @@
         }
       }
     },
-    "goreleaser@2.20.0": {
-      "last_modified": "2026-11-06T15:06:19Z",
-      "resolved": "github:NixOS/nixpkgs/4fe25e12eb9f4c744966dd3de5a05246cf098601#goreleaser",
+    "goreleaser@2.20.1": {
+      "last_modified": "2026-11-14T08:26:23Z",
+      "resolved": "github:NixOS/nixpkgs/5d2b81a7a3be3e2f832879028e4d60abbf58e9a0#goreleaser",
       "source": "devbox-search",
-      "version": "2.20.0",
+      "version": "2.20.1",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/0xhn6hd0hvkvpsmwsc8zz8r03rwjfr8q-goreleaser-2.20.0",
+              "path": "/nix/store/hc56zhlw7f5hw55nadr187b0na1f38al-goreleaser-2.20.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/0xhn6hd0hvkvpsmwsc8zz8r03rwjfr8q-goreleaser-2.20.0"
+          "store_path": "/nix/store/hc56zhlw7f5hw55nadr187b0na1f38al-goreleaser-2.20.1"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/6fswgdx109i3r2x8rpl0w4shn8j05syh-goreleaser-2.20.0",
+              "path": "/nix/store/0aamj7fxx2wmicjwl4yachnn1vqbk0f0-goreleaser-2.20.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/6fswgdx109i3r2x8rpl0w4shn8j05syh-goreleaser-2.20.0"
+          "store_path": "/nix/store/0aamj7fxx2wmicjwl4yachnn1vqbk0f0-goreleaser-2.20.1"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/2ls6ppvh80ld186py4agglyfydsv04qy-goreleaser-2.20.0",
+              "path": "/nix/store/7dg6943vz3l68q02pv3frm7bnx9505pa-goreleaser-2.20.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/2ls6ppvh80ld186py4agglyfydsv04qy-goreleaser-2.20.0"
+          "store_path": "/nix/store/7dg6943vz3l68q02pv3frm7bnx9505pa-goreleaser-2.20.1"
         }
       }
     },
